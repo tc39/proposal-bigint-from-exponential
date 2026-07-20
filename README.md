@@ -29,7 +29,7 @@ Note that the former likely implies corresponding changes to operator behavior, 
 
 Dynamic use cases cover the static ones, albeit with erosion of developer experience and implementer satisfaction.
 
-### Prior Art
+### Prior art
 
 Some npm packages already support parsing exponential-notation strings into arbitrary-precision integers (or analogous strings):
 * [big-integer](https://www.npmjs.com/package/big-integer): `bigInt("9.007199254740993e15")`
@@ -59,6 +59,11 @@ JavaScript [`BigInt(flt)`](https://tc39.es/ecma262/multipage/numbers-and-dates.h
 .NET [`new BigInteger(flt)`](https://learn.microsoft.com/en-us/dotnet/api/system.numerics.biginteger?view=net-10.0#instantiate-a-biginteger-object) | truncates toward zero
 Python [`int(flt)`](https://docs.python.org/3/library/functions.html#int) | truncates toward zero
 Rust [`num_bigint` `from_f64(flt)`](https://docs.rs/num-bigint/latest/num_bigint/struct.BigInt.html#method.from_f64) | truncates toward zero
+
+## Presentation history
+
+* as [normative PR #3857](https://github.com/tc39/ecma262/pull/3857): May 2026 TC39 plenary ([notes](https://github.com/tc39/notes/blob/main/meetings/2026-05/may-19.md#needs-consensus-pr-support-bigint-coercion-of-integers-expressed-as-exponential-notation-strings-3857))
+* converted to a Stage 1 proposal: July 2026 TC39 plenary
 
 ## Implementations
 
