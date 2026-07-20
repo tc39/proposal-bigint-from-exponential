@@ -1,50 +1,81 @@
-# template-for-proposals
+# Bigint from exponential
 
-A repository template for ECMAScript proposals.
+## Status
 
-## Before creating a proposal
+Champion(s): Richard Gibson ([@gibson042](https://github.com/gibson042))
 
-Please ensure the following:
-  1. You have read the [process document](https://tc39.github.io/process-document/)
-  1. You have reviewed the [existing proposals](https://github.com/tc39/proposals/)
-  1. You are aware that your proposal requires being a member of TC39, or locating a TC39 delegate to “champion” your proposal
+Stage: 1
 
-## Create your proposal repo
+## Motivation
 
-Follow these steps:
-  1. Click the green [“use this template”](https://github.com/tc39/template-for-proposals/generate) button in the repo header. (Note: Do not fork this repo in GitHub's web interface, as that will later prevent transfer into the TC39 organization)
-  1. Update ecmarkup and the biblio to the latest version: `npm install --save-dev ecmarkup@latest && npm install --save-dev --save-exact @tc39/ecma262-biblio@latest`.
-  1. Go to your repo settings page:
-      1. Under “General”, under “Features”, ensure “Issues” is checked, and disable “Wiki”, and “Projects” (unless you intend to use Projects)
-      1. Under “Pull Requests”, check “Always suggest updating pull request branches” and “automatically delete head branches”
-      1. Under the “Pages” section on the left sidebar, and set the source to “deploy from a branch”, select “gh-pages” in the branch dropdown, and then ensure that “Enforce HTTPS” is checked.
-      1. Under the “Actions” section on the left sidebar, under “General”, select “Read and write permissions” under “Workflow permissions” and click “Save”
-  1. [“How to write a good explainer”][explainer] explains how to make a good first impression.
+Exponential notation is useful for dealing with big integers, but unavailable for direct use in defining a bigint.
 
-      > Each TC39 proposal should have a `README.md` file which explains the purpose
-      > of the proposal and its shape at a high level.
-      >
-      > ...
-      >
-      > The rest of this page can be used as a template ...
+Use of `_` separators helps, but isn't quite enough for sufficiently large values.
+Manual conversion is possible (e.g., `/^(?:(0|[1-9][0-9]*)(?:[.]([0-9]*))?|[.]([0-9]+))(?:[Ee]([+-]?[0-9]+))?$/` validates and matches the relevant whole-number/fraction/decimal-exponent parts), but cumbersome and tedious.
 
-      Your explainer can point readers to the `index.html` generated from `spec.emu`
-      via markdown like
+## Use cases
 
-      ```markdown
-      You can browse the [ecmarkup output](https://ACCOUNT.github.io/PROJECT/)
-      or browse the [source](https://github.com/ACCOUNT/PROJECT/blob/HEAD/spec.emu).
-      ```
+This was discovered in [Amount](https://github.com/tc39/proposal-amount/issues/107), but also comes elsewhere (e.g., parsing JSON like `{ "scale": 1e6 }` with source text access, or when working with currencies, dates, or times).
 
-      where *ACCOUNT* and *PROJECT* are the first two path elements in your project's Github URL.
-      For example, for github.com/**tc39**/**template-for-proposals**, *ACCOUNT* is “tc39”
-      and *PROJECT* is “template-for-proposals”.
+Many use cases are static, where the exponential notation is part of the source text, while others are dynamic and therefore require a built-in function.
 
+## Description
 
-## Maintain your proposal repo
+Support for static use cases might be provided syntactically, e.g. `1e6n`.
+If so, this might be unprecedented in widespread programming languages (cf. https://github.com/tc39/ecma262/pull/3857#issuecomment-4960986324).
 
-  1. Make your changes to `spec.emu` (ecmarkup uses HTML syntax, but is not HTML, so I strongly suggest not naming it “.html”)
-  1. Any commit that makes meaningful changes to the spec, should run `npm run build` to verify that the build will succeed and the output looks as expected.
-  1. Whenever you update `ecmarkup`, run `npm run build` to verify that the build will succeed and the output looks as expected.
+Support for dynamic use cases could be provided by expanding the behavior of `BigInt("1e6")` as suggested by https://github.com/tc39/ecma262/pull/3857, or alternatively by something like `BigInt.parse("1e6")` or `BigInt.fromString("1e6")`.
+Note that the former likely implies corresponding changes to operator behavior, e.g. `1_000_000n == "1e6"` and `1_000_000n <= "1e6"` and `1_000_000n >= "1e6"`, just like the Number analogs (`1_000_000 == "1e6"` and `1_000_000 <= "1e6"` and `1_000_000 >= "1e6"`).
 
-  [explainer]: https://github.com/tc39/how-we-work/blob/HEAD/explainer.md
+Dynamic use cases cover the static ones, albeit with erosion of developer experience and implementer satisfaction.
+
+### Prior Art
+
+Some npm packages already support parsing exponential-notation strings into arbitrary-precision integers (or analogous strings):
+* [big-integer](https://www.npmjs.com/package/big-integer): `bigInt("9.007199254740993e15")`
+* [json-bigint](https://www.npmjs.com/package/json-bigint): `parse("9.007199254740993e15")`
+* [from-exponential](https://www.npmjs.com/package/from-exponential): `fromExponential("9.007199254740993e15")`
+
+And there is an even larger population of arbitrary-precision decimal libraries that generalize such behavior beyond integers.
+
+Across other programming languages, .NET `BigInteger.Parse(str, options)` supports `AllowDecimalPoint` and `AllowExponent` options, but that seems to be as far as it goes:
+
+Language/API | Leading `+`/`-` | Wrapping whitespace | Radix prefixes<br>(e.g. `0x`) | Separators<br>(e.g. `_`) | Decimal/exponent
+-- | -- | -- | -- | -- | --
+Go [`(new(big.Int)).SetString(str, 0)`](https://pkg.go.dev/math/big#Int.SetString) | yes | no | yes | yes | no
+Java [`new BigInteger(str, radix)`](https://docs.oracle.com/javase//7/docs/api/java/math/BigInteger.html#BigInteger(java.lang.String,%20int)) | yes | no | _n/a_ | no | no
+JavaScript [`BigInt(str)`](https://tc39.es/ecma262/multipage/numbers-and-dates.html#sec-bigint-constructor-number-value) | yes | yes | yes | no | no
+.NET [`BigInteger.Parse(str, options)`](https://learn.microsoft.com/en-us/dotnet/api/system.numerics.biginteger.parse?view=net-10.0#system-numerics-biginteger-parse(system-string-system-globalization-numberstyles-system-iformatprovider)) | optional | optional | no | optional | optional
+Python [`int(str, base=0)`](https://docs.python.org/3/library/functions.html#int) | yes | yes | yes | yes | no
+Rust [`num_bigint` `from_str_radix(&str, radix)`](https://docs.rs/num-bigint/latest/num_bigint/struct.BigInt.html#method.from_str_radix) | yes | no | _n/a_ | yes | no
+
+And for context, ECMAScript is unusual in its strictness:
+
+Language/API | Floating-point → arbitrary-precision integer
+-- | --
+Go [`(*big.Float).Int(new(big.Int))`](https://pkg.go.dev/math/big#Float.Int) | truncates toward zero
+Java [`bigDecimal.toBigInteger()`](https://docs.oracle.com/javase//7/docs/api/java/math/BigDecimal.html#toBigInteger()) | truncates toward zero
+JavaScript [`BigInt(flt)`](https://tc39.es/ecma262/multipage/numbers-and-dates.html#sec-bigint-constructor-number-value) | rejects non-integer
+.NET [`new BigInteger(flt)`](https://learn.microsoft.com/en-us/dotnet/api/system.numerics.biginteger?view=net-10.0#instantiate-a-biginteger-object) | truncates toward zero
+Python [`int(flt)`](https://docs.python.org/3/library/functions.html#int) | truncates toward zero
+Rust [`num_bigint` `from_f64(flt)`](https://docs.rs/num-bigint/latest/num_bigint/struct.BigInt.html#method.from_f64) | truncates toward zero
+
+## Implementations
+
+### Polyfill/transpiler implementations
+
+None yet.
+
+### Native implementations
+
+Check here after Stage 2.7.
+
+## Frequently asked questions
+
+**Q**: Should dynamic parsing also support `_` separators?
+
+**A**: Not through `BigInt(string)`, but maybe through a different API.
+
+**Q**: Should dynamic parsing be configurable?
+
+**A**: Also to be determined.
