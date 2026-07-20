@@ -63,7 +63,7 @@ Rust [`num_bigint` `from_f64(flt)`](https://docs.rs/num-bigint/latest/num_bigint
 ## Presentation history
 
 * as [normative PR #3857](https://github.com/tc39/ecma262/pull/3857): May 2026 TC39 plenary ([notes](https://github.com/tc39/notes/blob/main/meetings/2026-05/may-19.md#needs-consensus-pr-support-bigint-coercion-of-integers-expressed-as-exponential-notation-strings-3857))
-* converted to a Stage 1 proposal: July 2026 TC39 plenary
+* converted to a Stage 1 proposal: July 2026 TC39 plenary ([slides](https://docs.google.com/presentation/d/1kPYmR8LkoV4AZpSM_ezHCyR2givdk9OiQlwiXHdah4M/edit?usp=drive_link))
 
 ## Implementations
 
