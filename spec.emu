@@ -1,39 +1,212 @@
-<!doctype html>
+<!DOCTYPE html>
 <meta charset="utf8">
 <link rel="stylesheet" href="./spec.css">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/8.4/styles/github.min.css">
 <script src="./spec.js"></script>
 <pre class="metadata">
-title: Proposal Title Goes Here
-stage: -1
-contributors: Your Name(s) Here
+title: Bigint from exponential
+status: proposal
+stage: 1
+shortname: &lt;a href="https://github.com/tc39/proposal-bigint-from-exponential"&gt;proposal-bigint-from-exponential&lt;/a&gt;
+contributors: Richard Gibson
 </pre>
+<style>
+  h1.shortname {
+    display: block;
+  }
+</style>
 
-<emu-clause id="sec-demo-clause">
-  <h1>This is an emu-clause</h1>
-  <p>This is an algorithm:</p>
-  <emu-alg>
-    1. Let _proposal_ be *undefined*.
-    1. If IsAccepted(_proposal_) is *true*, then
-      1. Let _stage_ be *0*<sub>ℤ</sub>.
-    1. Else,
-      1. Let _stage_ be *-1*<sub>ℤ</sub>.
-    1. Return ? ToString(_stage_).
-  </emu-alg>
+<emu-clause id="sec-abstract-operations" number="7">
+  <h1>Abstract Operations</h1>
+
+  <emu-clause id="sec-type-conversion">
+    <h1>Type Conversion</h1>
+
+    <emu-clause id="sec-tonumber" oldids="table-tonumber-conversions" type="abstract operation" number="4">
+      <h1>
+        ToNumber (
+          _arg_: an ECMAScript language value,
+        ): either a normal completion containing a Number or a throw completion
+      </h1>
+      <dl class="header">
+        <dt>description</dt>
+        <dd>It converts _arg_ to a value of type Number.</dd>
+      </dl>
+
+      <emu-clause id="sec-tonumber-applied-to-the-string-type">
+        <h1>ToNumber Applied to the String Type</h1>
+        <p>The abstract operation StringToNumber specifies how to convert a String value to a Number value, using the following grammar.</p>
+        <h2>Syntax</h2>
+        <emu-grammar type="definition">
+          StringNumericLiteral :::
+            StrWhiteSpace?
+            StrWhiteSpace? StrNumericLiteral StrWhiteSpace?
+
+          StrWhiteSpace :::
+            StrWhiteSpaceChar StrWhiteSpace?
+
+          StrWhiteSpaceChar :::
+            WhiteSpace
+            LineTerminator
+
+          StrNumericLiteral :::
+            StrDecimalLiteral
+            NonDecimalIntegerLiteral[~Sep]
+
+          StrDecimalLiteral :::
+            StrUnsignedDecimalLiteral
+            `+` StrUnsignedDecimalLiteral
+            `-` StrUnsignedDecimalLiteral
+
+          StrUnsignedDecimalLiteral :::
+            `Infinity`
+            DecimalDigits[~Sep] `.` DecimalDigits[~Sep]? ExponentPart[~Sep]?
+            `.` DecimalDigits[~Sep] ExponentPart[~Sep]?
+            DecimalDigits[~Sep] ExponentPart[~Sep]?
+        </emu-grammar>
+        <p>All grammar symbols not explicitly defined above have the definitions used in the Lexical Grammar for numeric literals (<emu-xref href="#sec-literals-numeric-literals"></emu-xref>)</p>
+        <emu-note>
+          <p>Some differences should be noted between the syntax of a |StringNumericLiteral| and a |NumericLiteral|:</p>
+          <ul>
+            <li>
+              A |StringNumericLiteral| may include leading and/or trailing white space and/or line terminators.
+            </li>
+            <li>
+              A |StringNumericLiteral| that is decimal may have any number of leading `0` digits.
+            </li>
+            <li>
+              A |StringNumericLiteral| that is decimal may include a `+` or `-` to indicate its sign.
+            </li>
+            <li>
+              A |StringNumericLiteral| that is empty or contains only white space is converted to *+0*<sub>𝔽</sub>.
+            </li>
+            <li>
+              `Infinity` and `-Infinity` are recognized as a |StringNumericLiteral| but not as a |NumericLiteral|.
+            </li>
+            <li>
+              A |StringNumericLiteral| cannot include a |BigIntLiteralSuffix|.
+            </li>
+            <li>
+              A |StringNumericLiteral| cannot include a |NumericLiteralSeparator|.
+            </li>
+          </ul>
+        </emu-note>
+
+        <emu-clause id="sec-stringtonumber" type="abstract operation">
+          <h1>
+            StringToNumber (
+              _string_: a String,
+            ): a Number
+          </h1>
+          <dl class="header">
+          </dl>
+          <emu-alg>
+            1. Let _literal_ be ParseText(_string_, |StringNumericLiteral|).
+            1. If _literal_ is a List of errors, return *NaN*.
+            1. Return the StringNumericValue of _literal_.
+          </emu-alg>
+        </emu-clause>
+
+        <ins class="block">
+
+          <emu-clause id="sec-runtime-semantics-mv-for-stringnumericliteral">
+            <h1><ins>Runtime Semantics: MV</ins></h1>
+            <ul>
+              <li>
+                The MV of <emu-grammar>StringNumericLiteral ::: StrWhiteSpace?</emu-grammar> is 0.
+              </li>
+              <li>
+                The MV of <emu-grammar>StringNumericLiteral ::: StrWhiteSpace? StrNumericLiteral StrWhiteSpace?</emu-grammar> is the MV of |StrNumericLiteral|.
+              </li>
+              <li>
+                The MV of <emu-grammar>StrDecimalLiteral ::: `-` StrUnsignedDecimalLiteral</emu-grammar> is the negative of the MV of |StrUnsignedDecimalLiteral|.
+              </li>
+              <li>
+                The MV of <emu-grammar>StrUnsignedDecimalLiteral ::: `Infinity`</emu-grammar> is +∞.
+              </li>
+              <li>
+                The MV of <emu-grammar>StrUnsignedDecimalLiteral ::: DecimalDigits ExponentPart?</emu-grammar> is the MV of |DecimalDigits| × 10<sup>_e_</sup>, where _e_ is the MV of |ExponentPart| if |ExponentPart| is present and otherwise is 0.
+              </li>
+              <li>
+                The MV of <emu-grammar>StrUnsignedDecimalLiteral ::: `.` DecimalDigits ExponentPart?</emu-grammar> is the MV of |DecimalDigits| × 10<sup>_e_ - _n_</sup>, where _n_ is the number of code points in |DecimalDigits| and _e_ is the MV of |ExponentPart| if |ExponentPart| is present and otherwise is 0.
+              </li>
+              <li>
+                The MV of <emu-grammar>StrUnsignedDecimalLiteral ::: DecimalDigits `.` DecimalDigits? ExponentPart?</emu-grammar> is (the MV of the first |DecimalDigits| plus (_f_ × 10<sup>-_n_</sup>)) × 10<sup>_e_</sup>, where _f_ is the MV of the second |DecimalDigits| if the second |DecimalDigits| is present and otherwise is 0, _n_ is the number of code points in the second |DecimalDigits| if the second |DecimalDigits| is present and otherwise is 0, and _e_ is the MV of |ExponentPart| if |ExponentPart| is present and otherwise is 0.
+              </li>
+            </ul>
+          </emu-clause>
+        </ins>
+      </emu-clause>
+    </emu-clause>
+
+    <emu-clause id="sec-stringtobigint" type="abstract operation" number="16" oldids="sec-stringintegerliteral-grammar,prod-StringIntegerLiteral,prod-StrIntegerLiteral,sec-runtime-semantics-mv-for-stringintegerliteral">
+      <h1>
+        StringToBigInt (
+          _string_: a String,
+        ): a BigInt or *undefined*
+      </h1>
+      <dl class="header">
+      </dl>
+      <emu-alg>
+        1. Let _literal_ be ParseText(_string_, <del>|StringIntegerLiteral|</del><ins>|StringNumericLiteral|</ins>).
+        1. If _literal_ is a List of errors, return *undefined*.
+        1. Let _mv_ be the MV of _literal_.
+        1. <del>Assert: _mv_ is an integer.</del>
+        1. <ins>If _mv_ is not an integer, return *undefined*.</ins>
+        1. Return ℤ(_mv_).
+      </emu-alg>
+
+      <del class="block">
+
+        <emu-clause id="sec-stringintegerliteral-grammar">
+          <h1><del>StringIntegerLiteral Grammar</del></h1>
+          <p>StringToBigInt uses the following grammar.</p>
+          <h2>Syntax</h2>
+          <emu-grammar type="definition">
+            StringIntegerLiteral :::
+              StrWhiteSpace?
+              StrWhiteSpace? StrIntegerLiteral StrWhiteSpace?
+
+            StrIntegerLiteral :::
+              SignedInteger[~Sep]
+              NonDecimalIntegerLiteral[~Sep]
+          </emu-grammar>
+        </emu-clause>
+      </del>
+
+      <del class="block">
+
+        <emu-clause id="sec-runtime-semantics-mv-for-stringintegerliteral">
+          <h1>Runtime Semantics: MV</h1>
+          <ul>
+            <li>
+              The MV of <emu-grammar>StringIntegerLiteral ::: StrWhiteSpace?</emu-grammar> is 0.
+            </li>
+            <li>
+              The MV of <emu-grammar>StringIntegerLiteral ::: StrWhiteSpace? StrIntegerLiteral StrWhiteSpace?</emu-grammar> is the MV of |StrIntegerLiteral|.
+            </li>
+          </ul>
+        </emu-clause>
+      </del>
+    </emu-clause>
+  </emu-clause>
 </emu-clause>
 
-<emu-clause id="sec-is-accepted" type="abstract operation">
-  <h1>
-      IsAccepted (
-        _proposal_: an ECMAScript language value
-      ): a Boolean
-  </h1>
-  <dl class="header">
-    <dt>description</dt>
-    <dd>Tells you if the proposal was accepted</dd>
-  </dl>
-  <emu-alg>
-    1. If _proposal_ is not a String, or is not accepted, return *false*.
-    1. Return *true*.
-  </emu-alg>
-</emu-clause>
+<emu-annex id="sec-grammar-summary">
+  <h1>Grammar Summary</h1>
+
+  <emu-annex id="sec-number-conversions" number="6">
+    <h1>Number Conversions</h1>
+    <emu-prodref name="StringNumericLiteral"></emu-prodref>
+    <emu-prodref name="StrWhiteSpace"></emu-prodref>
+    <emu-prodref name="StrWhiteSpaceChar"></emu-prodref>
+    <emu-prodref name="StrNumericLiteral"></emu-prodref>
+    <emu-prodref name="StrDecimalLiteral"></emu-prodref>
+    <emu-prodref name="StrUnsignedDecimalLiteral"></emu-prodref>
+    <p>All grammar symbols not explicitly defined by the |StringNumericLiteral| grammar have the definitions used in the <emu-xref href="#sec-literals-numeric-literals">Lexical Grammar for numeric literals</emu-xref>.</p>
+    <del class="block">
+      <emu-prodref name="StringIntegerLiteral"></emu-prodref>
+      <emu-prodref name="StrIntegerLiteral"></emu-prodref>
+    </del>
+  </emu-annex>
+</emu-annex>
