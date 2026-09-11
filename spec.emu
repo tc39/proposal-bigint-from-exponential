@@ -192,6 +192,245 @@ contributors: Richard Gibson
   </emu-clause>
 </emu-clause>
 
+<emu-clause id="sec-ecmascript-language-lexical-grammar" number="12">
+  <h1>ECMAScript Language: Lexical Grammar</h1>
+
+  <emu-clause id="sec-ecmascript-language-lexical-grammar-literals" number="9">
+    <h1>Literals</h1>
+
+    <emu-clause id="sec-literals-numeric-literals" oldids="sec-additional-syntax-numeric-literals" number="3">
+      <h1>Numeric Literals</h1>
+      <h2>Syntax</h2>
+      <emu-grammar type="definition">
+        NumericLiteralSeparator ::
+          `_`
+
+        <del class="block">
+        XXXNumericLiteral ::
+          DecimalLiteral[~Legacy]
+          DecimalBigIntegerLiteral
+          NonDecimalIntegerLiteral[+Sep]
+          NonDecimalIntegerLiteral[+Sep] BigIntLiteralSuffix
+          LegacyOctalIntegerLiteral
+        </del>
+
+        <ins class="block">
+        NumericLiteral ::
+          DecimalLiteral[+Legacy]
+          DecimalBigIntegerLiteral
+          NonDecimalIntegerLiteral[+Sep]
+          NonDecimalIntegerLiteral[+Sep] BigIntLiteralSuffix
+          LegacyOctalIntegerLiteral
+        </ins>
+
+        <del class="block">
+        XXXDecimalBigIntegerLiteral ::
+          `0` BigIntLiteralSuffix
+          NonZeroDigit DecimalDigits[+Sep]? BigIntLiteralSuffix
+          NonZeroDigit NumericLiteralSeparator DecimalDigits[+Sep] BigIntLiteralSuffix
+        </del>
+
+        <ins class="block">
+        DecimalBigIntegerLiteral ::
+          DecimalLiteral[~Legacy] BigIntLiteralSuffix
+        </ins>
+
+        NonDecimalIntegerLiteral[Sep] ::
+          BinaryIntegerLiteral[?Sep]
+          OctalIntegerLiteral[?Sep]
+          HexIntegerLiteral[?Sep]
+
+        BigIntLiteralSuffix ::
+          `n`
+
+        <del class="block">
+        XXXDecimalLiteral ::
+          DecimalIntegerLiteral[~Legacy] `.` DecimalDigits[+Sep]? ExponentPart[+Sep]?
+          `.` DecimalDigits[+Sep] ExponentPart[+Sep]?
+          DecimalIntegerLiteral[~Legacy] ExponentPart[+Sep]?
+        </del>
+
+        <ins class="block">
+        DecimalLiteral[Legacy] ::
+          DecimalIntegerLiteral[?Legacy] `.` DecimalDigits[+Sep]? ExponentPart[+Sep]?
+          `.` DecimalDigits[+Sep] ExponentPart[+Sep]?
+          DecimalIntegerLiteral[?Legacy] ExponentPart[+Sep]?
+        </ins>
+
+        <del class="block">
+        XXXDecimalIntegerLiteral ::
+          `0`
+          NonZeroDigit
+          NonZeroDigit NumericLiteralSeparator? DecimalDigits[+Sep]
+          NonOctalDecimalIntegerLiteral
+        </del>
+
+        <ins class="block">
+        DecimalIntegerLiteral[Legacy] ::
+          `0`
+          NonZeroDigit
+          NonZeroDigit NumericLiteralSeparator? DecimalDigits[+Sep]
+          [+Legacy] NonOctalDecimalIntegerLiteral
+        </ins>
+
+        DecimalDigits[Sep] ::
+          DecimalDigit
+          DecimalDigits[?Sep] DecimalDigit
+          [+Sep] DecimalDigits[+Sep] NumericLiteralSeparator DecimalDigit
+
+        DecimalDigit :: one of
+          `0` `1` `2` `3` `4` `5` `6` `7` `8` `9`
+
+        NonZeroDigit :: one of
+          `1` `2` `3` `4` `5` `6` `7` `8` `9`
+
+        ExponentPart[Sep] ::
+          ExponentIndicator SignedInteger[?Sep]
+
+        ExponentIndicator :: one of
+          `e` `E`
+
+        SignedInteger[Sep] ::
+          DecimalDigits[?Sep]
+          `+` DecimalDigits[?Sep]
+          `-` DecimalDigits[?Sep]
+
+        BinaryIntegerLiteral[Sep] ::
+          `0b` BinaryDigits[?Sep]
+          `0B` BinaryDigits[?Sep]
+
+        BinaryDigits[Sep] ::
+          BinaryDigit
+          BinaryDigits[?Sep] BinaryDigit
+          [+Sep] BinaryDigits[+Sep] NumericLiteralSeparator BinaryDigit
+
+        BinaryDigit :: one of
+          `0` `1`
+
+        OctalIntegerLiteral[Sep] ::
+          `0o` OctalDigits[?Sep]
+          `0O` OctalDigits[?Sep]
+
+        OctalDigits[Sep] ::
+          OctalDigit
+          OctalDigits[?Sep] OctalDigit
+          [+Sep] OctalDigits[+Sep] NumericLiteralSeparator OctalDigit
+
+        LegacyOctalIntegerLiteral ::
+          `0` OctalDigit
+          LegacyOctalIntegerLiteral OctalDigit
+
+        NonOctalDecimalIntegerLiteral ::
+          `0` NonOctalDigit
+          LegacyOctalLikeDecimalIntegerLiteral NonOctalDigit
+          NonOctalDecimalIntegerLiteral DecimalDigit
+
+        LegacyOctalLikeDecimalIntegerLiteral ::
+          `0` OctalDigit
+          LegacyOctalLikeDecimalIntegerLiteral OctalDigit
+
+        OctalDigit :: one of
+          `0` `1` `2` `3` `4` `5` `6` `7`
+
+        NonOctalDigit :: one of
+          `8` `9`
+
+        HexIntegerLiteral[Sep] ::
+          `0x` HexDigits[?Sep]
+          `0X` HexDigits[?Sep]
+
+        HexDigits[Sep] ::
+          HexDigit
+          HexDigits[?Sep] HexDigit
+          [+Sep] HexDigits[+Sep] NumericLiteralSeparator HexDigit
+
+        // emu-format ignore
+        HexDigit :: one of
+          `0` `1` `2` `3` `4` `5` `6` `7` `8` `9` `a` `b` `c` `d` `e` `f` `A` `B` `C` `D` `E` `F`
+      </emu-grammar>
+      <p>The |SourceCharacter| immediately following a |NumericLiteral| must not be an |IdentifierStart| or |DecimalDigit|.</p>
+      <emu-note>
+        <p>For example: `3in` is an error and not the two input elements `3` and `in`.</p>
+      </emu-note>
+
+      <emu-clause id="sec-numeric-literals-early-errors">
+        <h1>Static Semantics: Early Errors</h1>
+
+        <ins class="block">
+          <emu-grammar>
+            DecimalBigIntegerLiteral :: DecimalLiteral[~Legacy] BigIntLiteralSuffix
+          </emu-grammar>
+          <ul>
+            <li>It is a Syntax Error if the MV of |DecimalLiteral| is not an integer.</li>
+          </ul>
+        </ins>
+
+        <emu-grammar>
+          NumericLiteral :: LegacyOctalIntegerLiteral
+
+          DecimalIntegerLiteral :: NonOctalDecimalIntegerLiteral
+        </emu-grammar>
+        <ul>
+          <li>It is a Syntax Error if IsStrict(this production) is *true*.</li>
+        </ul>
+        <emu-note>In non-strict code, this syntax is Legacy.</emu-note>
+      </emu-clause>
+
+      <emu-clause id="sec-numericvalue" type="sdo" number="3">
+        <h1>Static Semantics: NumericValue ( ): a Number or a BigInt</h1>
+        <dl class="header">
+        </dl>
+        <emu-grammar>NumericLiteral :: DecimalLiteral</emu-grammar>
+        <emu-alg>
+          1. Return RoundMVResult(MV of |DecimalLiteral|).
+        </emu-alg>
+        <emu-grammar>NumericLiteral :: NonDecimalIntegerLiteral</emu-grammar>
+        <emu-alg>
+          1. Return 𝔽(MV of |NonDecimalIntegerLiteral|).
+        </emu-alg>
+        <emu-grammar>NumericLiteral :: LegacyOctalIntegerLiteral</emu-grammar>
+        <emu-alg>
+          1. Return 𝔽(MV of |LegacyOctalIntegerLiteral|).
+        </emu-alg>
+        <emu-grammar>NumericLiteral :: NonDecimalIntegerLiteral BigIntLiteralSuffix</emu-grammar>
+        <emu-alg>
+          1. Return the BigInt value for the MV of |NonDecimalIntegerLiteral|.
+        </emu-alg>
+
+        <ins class="block">
+          <emu-grammar>DecimalBigIntegerLiteral :: DecimalLiteral[~Legacy] BigIntLiteralSuffix</emu-grammar>
+          <emu-alg>
+            1. Let _mv_ be the MV of |DecimalLiteral|.
+            1. Assert: _mv_ is an integer.
+            1. Return ℤ(_mv_).
+          </emu-alg>
+        </ins>
+
+        <del class="block">
+          <emu-grammar>XXXDecimalBigIntegerLiteral :: `0` BigIntLiteralSuffix</emu-grammar>
+          <emu-alg>
+            1. Return *0*<sub>ℤ</sub>.
+          </emu-alg>
+          <emu-grammar>XXXDecimalBigIntegerLiteral :: NonZeroDigit BigIntLiteralSuffix</emu-grammar>
+          <emu-alg>
+            1. Return the BigInt value for the MV of |NonZeroDigit|.
+          </emu-alg>
+          <emu-grammar>
+            XXXDecimalBigIntegerLiteral ::
+              NonZeroDigit DecimalDigits BigIntLiteralSuffix
+              NonZeroDigit NumericLiteralSeparator DecimalDigits BigIntLiteralSuffix
+          </emu-grammar>
+          <emu-alg>
+            1. Let _n_ be the number of code points in |DecimalDigits|, excluding all occurrences of |NumericLiteralSeparator|.
+            1. Let _mv_ be (the MV of |NonZeroDigit| × 10<sup>_n_</sup>) plus the MV of |DecimalDigits|.
+            1. Return ℤ(_mv_).
+          </emu-alg>
+        </del>
+      </emu-clause>
+    </emu-clause>
+  </emu-clause>
+</emu-clause>
+
 <emu-annex id="sec-grammar-summary">
   <h1>Grammar Summary</h1>
 
