@@ -201,6 +201,7 @@ contributors: Richard Gibson
     <emu-clause id="sec-literals-numeric-literals" oldids="sec-additional-syntax-numeric-literals" number="3">
       <h1>Numeric Literals</h1>
       <h2>Syntax</h2>
+      <emu-note type="editor">To avoid issues with <code>ecmarkup</code>, grammar updates are represented at the scope of left-hand side nonterminals rather than their individual productions, and the productions being replaced are associated with a left-hand-side nonterminal that has been renamed with an “XXX” prefix.</emu-note>
       <emu-grammar type="definition">
         NumericLiteralSeparator ::
           `_`
