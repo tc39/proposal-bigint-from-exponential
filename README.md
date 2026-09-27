@@ -101,10 +101,10 @@ Check here after Stage 2.7.
 
 **A**: Yes, and this is important for precision-preserving canonical forms (e.g., differentiating `1.000e3n` from `1e3n`).
 
-**Q**: Are negative exponents allowed as in e.g. `1230e-1n === 123n`?
+**Q**: [#8](https://github.com/tc39/proposal-bigint-from-exponential/issues/8) Are negative exponents allowed as in e.g. `1230e-1n === 123n`?
 
 **A**: To be determined. Restricting support to non-negative exponents would not be difficult.
 
-**Q**: Is it web-compatible to change the behavior of `1_000_000n == "1e6"` and `1_000_000n <= "1e6"` and `1_000_000n >= "1e6"`?
+**Q**: [#9](https://github.com/tc39/proposal-bigint-from-exponential/issues/9) Is it web-compatible to change the behavior of `1_000_000n == "1e6"` and `1_000_000n <= "1e6"` and `1_000_000n >= "1e6"`?
 
 **A**: To be determined, but if not then it is still possible to carve out exceptions while still supporting the primary use cases.
