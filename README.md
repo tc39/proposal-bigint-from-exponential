@@ -2,32 +2,44 @@
 
 ## Status
 
-Champion(s): Richard Gibson ([@gibson042](https://github.com/gibson042))
+[The TC39 Process](https://tc39.es/process-document/)
 
-Stage: 1
+**Stage**: 1
+
+**Champions**:
+- Richard Gibson ([@gibson042](https://github.com/gibson042))
+
+**Specification**: http://tc39.es/proposal-bigint-from-exponential/
 
 ## Motivation
 
 Exponential notation is useful for dealing with big integers, but unavailable for direct use in defining a bigint.
 
 Use of `_` separators helps, but isn't quite enough for sufficiently large values.
+`BigInt(…)` is lossy above 2<sup>53</sup>.
 Manual conversion is possible (e.g., `/^(?:(0|[1-9][0-9]*)(?:[.]([0-9]*))?|[.]([0-9]+))(?:[Ee]([+-]?[0-9]+))?$/` validates and matches the relevant whole-number/fraction/decimal-exponent parts), but cumbersome and tedious.
 
 ## Use cases
 
-This was discovered in [Amount](https://github.com/tc39/proposal-amount/issues/107), but also comes elsewhere (e.g., parsing JSON like `{ "scale": 1e6 }` with source text access, or when working with currencies, dates, or times).
+This was discovered in [Amount](https://github.com/tc39/proposal-amount/issues/107), but also comes up in other contexts (GitHub reports [20.3e3 files matching pattern `BigInt[(][^)a-z]*[0-9]e[0-9]`](https://github.com/search?q=%2FBigInt%5B%28%5D%5B%5E%29a-z%5D*%5B0-9%5De%5B0-9%5D%2F&type=code)):
+* parsing JSON like `{ "scale": 1e6 }` with source text access
+* working with currencies and/or financial values, particularly fine-grained cryptocurrencies (e.g., in [algorand-js](https://github.com/Folks-Finance/algorand-js-sdk/blob/c5c7f730c9ae69692d634cc7d85c9c0c928b1df0/src/math-lib.ts#L4))
+* working with high-resolution dates or times (e.g., in the [ECMAScript Temporal polyfill](https://github.com/js-temporal/temporal-polyfill/blob/c55b211de913320d8aba32c456bb45914739f414/lib/bigintmath.ts#L9-11), and [WASI libraries](https://github.com/cloudflare/workers-wasi/blob/55d7dc2374f6ccf7a863127b4635de87f920b2e0/src/index.ts#L321))
 
 Many use cases are static, where the exponential notation is part of the source text, while others are dynamic and therefore require a built-in function.
 
 ## Description
 
-Support for static use cases might be provided syntactically, e.g. `1e6n`.
-If so, this might be unprecedented in widespread programming languages (cf. https://github.com/tc39/ecma262/pull/3857#issuecomment-4960986324).
+For static use cases, we propose syntactic support like `1e6n`[^1].
 
-Support for dynamic use cases could be provided by expanding the behavior of `BigInt("1e6")` as suggested by https://github.com/tc39/ecma262/pull/3857, or alternatively by something like `BigInt.parse("1e6")` or `BigInt.fromString("1e6")`.
-Note that the former likely implies corresponding changes to operator behavior, e.g. `1_000_000n == "1e6"` and `1_000_000n <= "1e6"` and `1_000_000n >= "1e6"`, just like the Number analogs (`1_000_000 == "1e6"` and `1_000_000 <= "1e6"` and `1_000_000 >= "1e6"`).
+[^1]: This might be unprecedented in widespread programming languages (cf. https://github.com/tc39/ecma262/pull/3857#issuecomment-4960986324).
 
-Dynamic use cases cover the static ones, albeit with erosion of developer experience and implementer satisfaction.
+For dynamic use cases, we propose expanding the behavior of StringToBigInt as suggested by https://github.com/tc39/ecma262/pull/3857, supporting `BigInt("1e6")`/`BigUint64Array.from(["1e6"])`/etc.
+Note that this also affects operator behavior (e.g., `1_000_000n == "1e6"` and `1_000_000n <= "1e6"` and `1_000_000n >= "1e6"`, just like the Number analogs `1_000_000 == "1e6"` and `1_000_000 <= "1e6"` and `1_000_000 >= "1e6"`) absent explicit changes to preserve backwards compatibility.
+
+Alternatives like `BigInt.parse("1e6")` or `BigInt.fromString("1e6")` could also be considered.
+
+Dynamic use cases technically cover the static ones, albeit with erosion of developer experience and implementer satisfaction.
 
 ### Prior art
 
@@ -83,4 +95,16 @@ Check here after Stage 2.7.
 
 **Q**: Should dynamic parsing be configurable?
 
-**A**: Also to be determined.
+**A**: Not without doing the same for numbers, which seems like a separate proposal.
+
+**Q**: Are decimals allowed as in e.g. `BigInt("86.4e12") === 86_400_000_000_000n`?
+
+**A**: Yes, and this is important for precision-preserving canonical forms (e.g., differentiating `1.000e3n` from `1e3n`).
+
+**Q**: Are negative exponents allowed as in e.g. `1230e-1n === 123n`?
+
+**A**: To be determined. Restricting support to non-negative exponents would not be difficult.
+
+**Q**: Is it web-compatible to change the behavior of `1_000_000n == "1e6"` and `1_000_000n <= "1e6"` and `1_000_000n >= "1e6"`?
+
+**A**: To be determined, but if not then it is still possible to carve out exceptions while still supporting the primary use cases.
