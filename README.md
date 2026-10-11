@@ -4,7 +4,7 @@
 
 [The TC39 Process](https://tc39.es/process-document/)
 
-**Stage**: 1
+**Stage**: 2
 
 **Champions**:
 - Richard Gibson ([@gibson042](https://github.com/gibson042))
@@ -76,6 +76,7 @@ Rust [`num_bigint` `from_f64(flt)`](https://docs.rs/num-bigint/latest/num_bigint
 
 * as [normative PR #3857](https://github.com/tc39/ecma262/pull/3857): May 2026 TC39 plenary ([notes](https://github.com/tc39/notes/blob/main/meetings/2026-05/may-19.md#needs-consensus-pr-support-bigint-coercion-of-integers-expressed-as-exponential-notation-strings-3857))
 * converted to a Stage 1 proposal: July 2026 TC39 plenary ([slides](https://docs.google.com/presentation/d/1kPYmR8LkoV4AZpSM_ezHCyR2givdk9OiQlwiXHdah4M/edit?usp=drive_link))
+* for Stage 2: September 2026 TC39 plenary ([slides](https://docs.google.com/presentation/d/1iHNosyAVvh7Ir8KqGgZ_BTfthEo0W51NcLDVeEHwoYM/edit?usp=sharing))
 
 ## Implementations
 
